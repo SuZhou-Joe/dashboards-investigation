@@ -39,6 +39,7 @@ import { useOpenSearchDashboards } from '../../../../../../../../src/plugins/ope
 import { callOpenSearchCluster } from '../../../../../plugin_helpers/plugin_proxy_call';
 import { MultiVariantInput } from '../../input/multi_variant_input';
 import { parsePPLQuery } from '../../../../../../common/utils';
+import { MessageWrapper } from '../../message';
 
 export interface QueryObject {
   schema?: any[];
@@ -195,85 +196,89 @@ export const PPLParagraph = ({
 
   return (
     <>
-      <EuiFlexGroup style={{ marginTop: 0 }}>
-        <EuiFlexItem>
-          <ParagraphDataSourceSelector
-            disabled={!!isRunning}
-            fullWidth={false}
-            onSelectedDataSource={onSelectedDataSource}
-            selectedDataSourceId={selectedDataSource}
-            dataSourceFilter={dataSourceFilterFn}
-          />
-        </EuiFlexItem>
-      </EuiFlexGroup>
-      <EuiSpacer size="s" />
-      <EuiCompressedFormRow
-        fullWidth={true}
-        helpText={
-          <EuiText size="s">
-            Specify the input language on the first line using %[language type]. Supported languages
-            include{' '}
-            {
-              <>
-                <EuiLink href={SQL_DOCUMENTATION_URL} target="_blank">
-                  SQL
-                </EuiLink>{' '}
+      {/* detect notebook type */}
+      {paragraphValue.dataSourceMDSId ? null : (
+        <EuiFlexGroup style={{ marginTop: 0 }}>
+          <EuiFlexItem>
+            <ParagraphDataSourceSelector
+              disabled={!!isRunning}
+              fullWidth={false}
+              onSelectedDataSource={onSelectedDataSource}
+              selectedDataSourceId={selectedDataSource}
+              dataSourceFilter={dataSourceFilterFn}
+            />
+          </EuiFlexItem>
+        </EuiFlexGroup>
+      )}
+      {ParagraphState.getOutput(paragraphValue)?.result ? (
+        <MessageWrapper type="input">
+          <EuiText>{inputQuery}</EuiText>
+        </MessageWrapper>
+      ) : (
+        <EuiCompressedFormRow
+          fullWidth={true}
+          helpText={
+            <EuiText size="s">
+              Specify the input language on the first line using %[language type]. Supported
+              languages include{' '}
+              {
+                <>
+                  <EuiLink href={SQL_DOCUMENTATION_URL} target="_blank">
+                    SQL
+                  </EuiLink>{' '}
+                  <EuiLink href={PPL_DOCUMENTATION_URL} target="_blank">
+                    PPL
+                  </EuiLink>{' '}
+                </>
+              }
+              .
+            </EuiText>
+          }
+          isInvalid={!!errorMessage}
+          error={
+            <EuiText size="s">
+              {errorMessage}.{' '}
+              {getInputType(paragraphState.getBackendValue()) === 'ppl' ? (
                 <EuiLink href={PPL_DOCUMENTATION_URL} target="_blank">
-                  PPL
-                </EuiLink>{' '}
-              </>
-            }
-            .
-          </EuiText>
-        }
-        isInvalid={!!errorMessage}
-        error={
-          <EuiText size="s">
-            {errorMessage}.{' '}
-            {getInputType(paragraphState.getBackendValue()) === 'ppl' ? (
-              <EuiLink href={PPL_DOCUMENTATION_URL} target="_blank">
-                Learn More <EuiIcon type="popout" size="s" />
-              </EuiLink>
-            ) : (
-              <EuiLink href={SQL_DOCUMENTATION_URL} target="_blank">
-                <EuiIcon type="popout" size="s" />
-              </EuiLink>
-            )}
-          </EuiText>
-        }
-      >
-        <div style={{ width: '100%' }}>
-          <MultiVariantInput
-            input={{
-              inputText: inputQuery,
-              inputType: getInputType(paragraphValue).toUpperCase(),
-              parameters: paragraphValue.input.parameters,
-            }}
-            onSubmit={({ inputText, inputType, parameters }) => {
-              paragraphState.updateInput({
-                inputText: inputType === 'SQL' ? `%sql\n${inputText}` : `%ppl\n${inputText}`,
-                parameters,
-              });
-              paragraphState.updateUIState({
-                isOutputStale: true,
-              });
-              runParagraphHandler();
-            }}
-          />
-        </div>
-      </EuiCompressedFormRow>
+                  Learn More <EuiIcon type="popout" size="s" />
+                </EuiLink>
+              ) : (
+                <EuiLink href={SQL_DOCUMENTATION_URL} target="_blank">
+                  <EuiIcon type="popout" size="s" />
+                </EuiLink>
+              )}
+            </EuiText>
+          }
+        >
+          <div style={{ width: '100%' }}>
+            <MultiVariantInput
+              input={{
+                inputText: inputQuery,
+                inputType: getInputType(paragraphValue).toUpperCase(),
+                parameters: paragraphValue.input.parameters,
+              }}
+              onSubmit={({ inputText, inputType, parameters }) => {
+                paragraphState.updateInput({
+                  inputText: inputType === 'SQL' ? `%sql\n${inputText}` : `%ppl\n${inputText}`,
+                  parameters,
+                });
+                paragraphState.updateUIState({
+                  isOutputStale: true,
+                });
+                runParagraphHandler();
+              }}
+            />
+          </div>
+        </EuiCompressedFormRow>
+      )}
+      <EuiSpacer size="m" />
       {isRunning ? (
         <EuiLoadingContent />
-      ) : (
-        <>
-          <EuiSpacer size="m" />
+      ) : errorMessage || (columns.length && data.length) ? (
+        <MessageWrapper type="output">
           {errorMessage && <EuiCodeBlock>{errorMessage}</EuiCodeBlock>}
           {columns.length && data.length ? (
             <div>
-              <EuiText className="wrapAll" data-test-subj="queryOutputText">
-                <b>{inputQuery}</b>
-              </EuiText>
-              <EuiSpacer />
               <QueryDataGridMemo
                 rowCount={queryObject?.datarows?.length || 0}
                 queryColumns={columns}
@@ -281,8 +286,9 @@ export const PPLParagraph = ({
               />
             </div>
           ) : null}
-        </>
-      )}
+        </MessageWrapper>
+      ) : null}
+      <EuiSpacer size="m" />
     </>
   );
 };

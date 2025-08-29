@@ -6,14 +6,10 @@
 import React, { useMemo, useEffect, useContext, useCallback, useState } from 'react';
 import { useObservable } from 'react-use';
 import {
-  EuiAvatar,
-  EuiFlexGroup,
-  EuiFlexItem,
   EuiMarkdownFormat,
   EuiModal,
   EuiModalBody,
   EuiModalHeader,
-  EuiPanel,
   EuiSpacer,
   EuiTabbedContent,
   EuiText,
@@ -42,6 +38,7 @@ import { StepDetailsModal } from './step_details_modal';
 import { PERAgentTaskService } from './services/per_agent_task_service';
 import { MessageTraceFlyout } from './message_trace_flyout';
 import { PERAgentMemoryService } from './services/per_agent_memory_service';
+import { MessageWrapper } from '../../message';
 
 export const DeepResearchParagraph = ({
   paragraphState,
@@ -223,19 +220,11 @@ export const DeepResearchParagraph = ({
 
   return (
     <>
-      <EuiFlexGroup gutterSize="s" alignItems="flexStart">
-        <EuiFlexItem grow={false}>
-          <EuiAvatar name={state.value.owner ?? 'User'} size="l" />
-        </EuiFlexItem>
-        <EuiFlexItem>
-          <EuiPanel paddingSize="m" hasShadow={false} color="subdued">
-            <EuiText size="s">
-              <p>{paragraphValue.input.inputText}</p>
-            </EuiText>
-          </EuiPanel>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false} />
-      </EuiFlexGroup>
+      <MessageWrapper type="input">
+        <EuiText size="s">
+          <p>{paragraphValue.input.inputText}</p>
+        </EuiText>
+      </MessageWrapper>
       <EuiSpacer size="m" />
       <DeepResearchOutput
         taskService={PERAgentServices.task}

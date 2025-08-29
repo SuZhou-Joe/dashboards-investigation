@@ -11,7 +11,6 @@ import {
   EuiFlexItem,
   EuiFlexGroup,
   EuiPanel,
-  EuiAvatar,
   EuiTitle,
   EuiIcon,
   EuiSmallButtonEmpty,
@@ -30,6 +29,7 @@ import { formatTimeGap } from '../../../../../utils/time';
 import { isMarkdownText } from './utils';
 import { PERAgentTaskService } from './services/per_agent_task_service';
 import { PERAgentMemoryService } from './services/per_agent_memory_service';
+import { MessageWrapper } from '../../message';
 
 interface Props {
   taskService: PERAgentTaskService;
@@ -152,30 +152,18 @@ export const DeepResearchOutput = ({
         !task ||
         !isStateCompletedOrFailed(task.state)) && <EuiLoadingContent />}
       {finalMessage && (
-        <EuiFlexGroup gutterSize="s" alignItems="flexStart" style={{ overflow: 'hidden' }}>
-          <EuiFlexItem grow={false} />
-          <EuiFlexItem style={{ overflow: 'hidden' }}>
-            <EuiPanel paddingSize="m" hasShadow={false} color="primary">
-              <EuiText className="markdown-output-text" size="s">
-                {isMarkdownText(finalMessage) ? (
-                  <MarkdownRender source={finalMessage} />
-                ) : (
-                  finalMessage
-                )}
-              </EuiText>
-              {task && task.last_update_time && task.create_time && (
-                <EuiText size="xs" color="subdued" style={{ marginTop: '8px' }}>
-                  Total Duration:{' '}
-                  {formatTimeGap(Number(task.last_update_time) - Number(task.create_time))}
-                  &nbsp;&nbsp; Last updated: {moment(task.last_update_time).format()}
-                </EuiText>
-              )}
-            </EuiPanel>
-          </EuiFlexItem>
-          <EuiFlexItem grow={false}>
-            <EuiAvatar name="Agent" size="l" />
-          </EuiFlexItem>
-        </EuiFlexGroup>
+        <MessageWrapper type="output">
+          <EuiText className="markdown-output-text" size="s">
+            {isMarkdownText(finalMessage) ? <MarkdownRender source={finalMessage} /> : finalMessage}
+          </EuiText>
+          {task && task.last_update_time && task.create_time && (
+            <EuiText size="xs" color="subdued" style={{ marginTop: '8px' }}>
+              Total Duration:{' '}
+              {formatTimeGap(Number(task.last_update_time) - Number(task.create_time))}
+              &nbsp;&nbsp; Last updated: {moment(task.last_update_time).format()}
+            </EuiText>
+          )}
+        </MessageWrapper>
       )}
       <EuiSpacer />
     </>
