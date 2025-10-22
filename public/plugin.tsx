@@ -46,6 +46,8 @@ import { OpenSearchDashboardsContextProvider } from '../../../src/plugins/opense
 import { paragraphRegistry } from './paragraphs';
 import { ContextService } from './services/context_service';
 import { ChatContext, ISuggestionProvider } from '../../dashboards-assistant/public';
+import { OSDAGUIAgent } from './agent/osd_ag_ui_agent';
+import { RunAgentInput } from '../common/types/ag_ui_types';
 
 export class InvestigationPlugin
   implements
@@ -213,6 +215,69 @@ export class InvestigationPlugin
           })),
       }),
     });
+
+    const agentId = '5DhNC5oB45oSINnwrD1e';
+
+    const input: RunAgentInput = {
+      threadId: `thread-${Date.now()}-pj44w6ive`,
+      runId: `run-${Date.now()}-gu67vx1jl`,
+      messages: [
+        {
+          id: `msg-${Date.now()}-epujp4bi6`,
+          role: 'user',
+          content: 'hello',
+        },
+      ],
+      tools: [
+        {
+          name: 'execute_ppl_query',
+          description: 'Update the query bar with a PPL query and optionally execute it',
+          parameters: {
+            type: 'object',
+            properties: {
+              query: {
+                type: 'string',
+                description: 'The PPL query to set in the query bar',
+              },
+              autoExecute: {
+                type: 'boolean',
+                description: 'Whether to automatically execute the query (default: true)',
+              },
+              description: {
+                type: 'string',
+                description: 'Optional description of what the query does',
+              },
+            },
+            required: ['query'],
+          },
+        },
+      ],
+      context: [
+        {
+          description: 'Explore application page context',
+          value:
+            '{"appId":"explore","timeRange":{"from":"now-15m","to":"now"},"query":{"query":"","language":"PPL"}}',
+        },
+      ],
+    };
+
+    const agent = new OSDAGUIAgent({
+      makeHttpRequest: (inputParams, signal) =>
+        core.http
+          .post(`/api/investigation/${agentId}/execute/stream`, {
+            signal,
+            asResponse: true,
+            query: {
+              dataSourceId: '7dc717f0-af11-11f0-b19c-eb5fb18bf285',
+            },
+            body: JSON.stringify(inputParams),
+          })
+          .then((res) => res.response as Response),
+    });
+
+    const resultObservable = agent.runAgent(input);
+
+    resultObservable.subscribe((result) => console.log('result', result));
 
     // Export so other plugins can use this flyout
     return {};
