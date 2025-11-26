@@ -284,7 +284,7 @@ export function registerHypothesisRoute(router: IRouter) {
 
   router.delete(
     {
-      path: `${NOTEBOOKS_API_PREFIX}/savedNotebook/{notebookId}/deleteHypothesis/{hypothesisId}`,
+      path: `${NOTEBOOKS_API_PREFIX}/savedNotebook/{notebookId}/{hypothesisId}`,
       validate: {
         params: schema.object({
           notebookId: schema.string(),

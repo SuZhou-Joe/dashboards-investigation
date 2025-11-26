@@ -180,7 +180,7 @@ export const useNotebook = () => {
       const { id: openedNoteId } = context.state.value;
       try {
         const endpoint = hypothesisId
-          ? `${NOTEBOOKS_API_PREFIX}/savedNotebook/${openedNoteId}/deleteHypothesis/${hypothesisId}`
+          ? `${NOTEBOOKS_API_PREFIX}/savedNotebook/${openedNoteId}/${hypothesisId}`
           : `${NOTEBOOKS_API_PREFIX}/savedNotebook/${openedNoteId}/deleteAllHypotheses`;
 
         await http.delete(endpoint);
