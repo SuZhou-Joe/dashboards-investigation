@@ -147,7 +147,7 @@ export const useNotebook = () => {
     async (hypotheses: HypothesisItem[], isNewHypotheses?: boolean) => {
       const { id: openedNoteId, runningMemory, historyMemory } = context.state.value;
       try {
-        const response = await http.put(`${NOTEBOOKS_API_PREFIX}/note/updateHypotheses`, {
+        const response = await http.put(`${NOTEBOOKS_API_PREFIX}/note/update_hypotheses`, {
           body: JSON.stringify({
             notebookId: openedNoteId,
             hypotheses,

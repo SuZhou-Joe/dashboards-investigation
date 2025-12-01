@@ -165,7 +165,7 @@ export function registerNoteRoute(router: IRouter, auth: HttpAuth) {
 
   router.put(
     {
-      path: `${NOTEBOOKS_API_PREFIX}/note/updateHypotheses`,
+      path: `${NOTEBOOKS_API_PREFIX}/note/update_hypotheses`,
       validate: {
         body: schema.object({
           notebookId: schema.string(),
